@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Unauthorized access",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401
+    },
+    {
+      "name": "Get all applications with auth",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "authorization": "Bearer admin123"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "Update application status",
+      "method": "PUT",
+      "path": "/",
+      "headers": {
+        "authorization": "Bearer admin123"
+      },
+      "body": {
+        "id": 1,
+        "status": "approved"
+      },
+      "expectedStatus": 200
+    }
+  ]
+}
