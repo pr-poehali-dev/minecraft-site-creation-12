@@ -1,0 +1,38 @@
+{
+  "tests": [
+    {
+      "name": "Get pending applications count",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Submit valid application",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "username": "TestPlayer",
+        "age": 18,
+        "email": "test@example.com",
+        "discord": "testuser#1234",
+        "experience": "Играю 5 лет",
+        "why_join": "Хочу играть с друзьями"
+      },
+      "expectedStatus": 201
+    },
+    {
+      "name": "Submit application with missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "username": "TestPlayer",
+        "age": 18
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

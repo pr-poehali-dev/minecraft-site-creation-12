@@ -3,16 +3,75 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [copiedIP, setCopiedIP] = useState(false);
+  const [applicationOpen, setApplicationOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   const serverIP = 'play.myserver.net';
+  const API_URL = 'https://functions.poehali.dev/66416083-c210-412f-8ec8-261700553227';
 
   const copyIP = () => {
     navigator.clipboard.writeText(serverIP);
     setCopiedIP(true);
     setTimeout(() => setCopiedIP(false), 2000);
+  };
+
+  const handleApplicationSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      username: formData.get('username'),
+      age: parseInt(formData.get('age') as string),
+      email: formData.get('email'),
+      discord: formData.get('discord'),
+      experience: formData.get('experience'),
+      why_join: formData.get('why_join')
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Успешно!',
+          description: 'Ваша заявка отправлена и будет рассмотрена',
+        });
+        setApplicationOpen(false);
+        e.currentTarget.reset();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Ошибка',
+          description: result.error || 'Не удалось отправить заявку',
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Проблема с подключением к серверу',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const features = [
@@ -120,10 +179,64 @@ const Index = () => {
               <a href="#donate" className="text-muted-foreground hover:text-foreground transition-colors">Донат</a>
               <a href="#news" className="text-muted-foreground hover:text-foreground transition-colors">Новости</a>
             </div>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Icon name="Users" size={18} className="mr-2" />
-              Онлайн: 128
-            </Button>
+            <div className="flex gap-3">
+              <Dialog open={applicationOpen} onOpenChange={setApplicationOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                    <Icon name="FileText" size={18} className="mr-2" />
+                    Подать заявку
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Заявка на вступление</DialogTitle>
+                    <DialogDescription>
+                      Заполните форму, чтобы присоединиться к нашему серверу
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleApplicationSubmit} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="username">Ник в Minecraft *</Label>
+                        <Input id="username" name="username" required placeholder="Steve123" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="age">Возраст *</Label>
+                        <Input id="age" name="age" type="number" required min="10" max="100" placeholder="18" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input id="email" name="email" type="email" required placeholder="player@example.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="discord">Discord</Label>
+                      <Input id="discord" name="discord" placeholder="username#1234" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="experience">Опыт игры в Minecraft *</Label>
+                      <Textarea id="experience" name="experience" required placeholder="Расскажите о вашем опыте игры..." rows={3} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="why_join">Почему хотите присоединиться? *</Label>
+                      <Textarea id="why_join" name="why_join" required placeholder="Почему вы выбрали наш сервер?" rows={3} />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button type="submit" disabled={isSubmitting} className="flex-1 bg-primary hover:bg-primary/90">
+                        {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setApplicationOpen(false)} disabled={isSubmitting}>
+                        Отмена
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+              <Button className="bg-primary hover:bg-primary/90">
+                <Icon name="Users" size={18} className="mr-2" />
+                Онлайн: 128
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
